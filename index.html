@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Incidencias Grúas</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:#eef2f7;
+  color:#0f172a;
+}
+
+/* HEADER */
+
+header{
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:#fff;
+  padding:18px 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 5px 20px rgba(0,0,0,.15);
+}
+
+header h2{
+  margin:0;
+  font-size:22px;
+}
+
+.nav{
+  display:flex;
+  gap:10px;
+}
+
+.nav button{
+  border:none;
+  padding:10px 18px;
+  border-radius:12px;
+  background:#334155;
+  color:#fff;
+  cursor:pointer;
+  font-weight:600;
+  transition:.2s;
+}
+
+.nav button:hover{
+  background:#2563eb;
+  transform:translateY(-2px);
+}
+
+/* PAGES */
+
+.page{
+  display:none;
+  padding:30px;
+}
+
+.active{
+  display:block;
+}
+
+/* CARD */
+
+.card{
+  background:#fff;
+  border-radius:22px;
+  padding:28px;
+  max-width:1450px;
+  margin:auto;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+/* TITLES */
+
+.title{
+  margin-top:0;
+  margin-bottom:25px;
+  font-size:24px;
+  font-weight:700;
+  color:#0f172a;
+}
+
+/* FORM */
+
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:22px;
+}
+
+.form-group{
+  display:flex;
+  flex-direction:column;
+}
+
+.form-group.full{
+  grid-column:span 2;
+}
+
+label{
+  margin-bottom:8px;
+  font-size:13px;
+  font-weight:600;
+  color:#475569;
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  padding:13px;
+  border-radius:14px;
+  border:1px solid #dbe2ea;
+  background:#f8fafc;
+  font-size:14px;
+  transition:.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+  outline:none;
+  border-color:#2563eb;
+  background:#fff;
+  box-shadow:0 0 0 4px rgba(37,99,235,.10);
+}
+
+textarea{
+  min-height:110px;
+  resize:vertical;
+}
+
+/* BUTTON */
+
+.primary{
+  border:none;
+  padding:15px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px rgba(37,99,235,.30);
+}
+
+/* TABLE */
+
+.table-container{
+  overflow:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1400px;
+}
+
+thead{
+  background:#f8fafc;
+}
+
+th{
+  padding:14px;
+  font-size:13px;
+  color:#475569;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  border-bottom:2px solid #e2e8f0;
+}
+
+td{
+  padding:14px;
+  border-bottom:1px solid #edf2f7;
+  text-align:center;
+  font-size:14px;
+  vertical-align:middle;
+}
+
+tr:hover{
+  background:#f8fafc;
+}
+
+/* STATUS */
+
+.badge{
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  display:inline-block;
+  transition:.2s;
+}
+
+.badge:hover{
+  transform:scale(1.05);
+}
+
+.abierto{
+  background:#fee2e2;
+  color:#b91c1c;
+}
+
+.proceso{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.cerrado{
+  background:#dcfce7;
+  color:#166534;
+}
+
+/* IMAGES */
+
+.img-thumb{
+  width:45px;
+  height:45px;
+  object-fit:cover;
+  border-radius:10px;
+  cursor:pointer;
+  border:2px solid #e2e8f0;
+  transition:.2s;
+}
+
+.img-thumb:hover{
+  transform:scale(1.1);
+}
+
+/* VIEWER */
+
+#visor{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+#visor img{
+  max-width:90%;
+  max-height:90%;
+  border-radius:18px;
+}
+
+/* INPUTS TABLA */
+
+.fecha-atencion,
+.nota-input{
+  padding:8px;
+  border-radius:10px;
+  border:1px solid #cbd5e1;
+  background:#fff;
+  width:100%;
+}
+
+.nota-input{
+  min-width:220px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:800px){
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .form-group.full{
+    grid-column:span 1;
+  }
+
+  header{
+    flex-direction:column;
+    gap:15px;
+    text-align:center;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+  <h2>Reporte de Incidencias Grúas</h2>
+
+  <div class="nav">
+    <button onclick="show('form')">Nuevo Reporte</button>
+    <button onclick="show('list')">Ver Reportes</button>
+  </div>
+
+</header>
+
+<!-- FORM -->
+
+<div id="form" class="page active">
+
+  <div class="card">
+
+    <h3 class="title">Nuevo Reporte</h3>
+
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Tipo de equipo</label>
+
+        <select id="tipo" oninput="loadGruas()">
+          <option value="">Seleccionar</option>
+          <option>RTG</option>
+          <option>STS</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Grúa</label>
+
+        <select id="grua">
+          <option value="">Seleccionar</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de falla</label>
+
+        <select id="falla">
+          <option>Intercom(Gaitronics)</option>
+          <option>Panel de Fallas</option>
+          <option>Alumbrado</option>
+          <option>Joystics</option>
+          <option>Cristales</option>
+          <option>Otros</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Fecha reporte</label>
+
+        <input type="date" id="fecha">
+      </div>
+
+      <div class="form-group">
+        <label>Reporta</label>
+
+        <input id="reporta" placeholder="Nombre">
+      </div>
+
+      <div class="form-group">
+        <label>Imágenes</label>
+
+        <input type="file" id="imgs" multiple>
+      </div>
+
+      <div class="form-group full">
+        <label>Descripción</label>
+
+        <textarea id="desc" placeholder="Detalle del reporte"></textarea>
+      </div>
+
+      <div class="form-group full">
+        <button class="primary" onclick="save()">
+          Guardar Reporte
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- LIST -->
+
+<div id="list" class="page">
+
+  <div class="card">
+
+    <h3 class="title">Reportes registrados</h3>
+    <div style="display:flex;gap:12px;margin-bottom:20px;">
+
+  <button
+    class="primary"
+    onclick="guardarFechas()"
+  >
+    Guardar Fechas Atención
+  </button>
+
+  <button
+    class="primary"
+    onclick="guardarNotas()"
+  >
+    Guardar Notas
+  </button>
+
+</div>
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Ticket</th>
+            <th>Grúa</th>
+            <th>Falla</th>
+            <th>Descripción</th>
+            <th>Reporta</th>
+            <th>Fecha Reporte</th>
+            <th>Fecha Atención</th>
+            <th>Nota</th>
+            <th>Estado</th>
+            <th>Fotos</th>
+            
+          </tr>
+
+        </thead>
+
+        <tbody id="table"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- VISOR -->
+
+<div id="visor" onclick="this.style.display='none'">
+  <img id="bigImg">
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+
+const supabaseClient = supabase.createClient(
+  "https://gogalvnmpntvjtiunowz.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvZ2Fsdm5tcG50dmp0aXVub3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzM5MzcsImV4cCI6MjA4Nzg0OTkzN30.wOZbM_s2F-FjdrXqUz6lvRnOYAPuTYlGhwcP3hzbYTw"
+);
+
+let data = [];
+let editando = null;
+
+/* NAV */
+
+function show(p){
+
+  document.querySelectorAll(".page")
+    .forEach(e=>e.classList.remove("active"));
+
+  document.getElementById(p)
+    .classList.add("active");
+}
+
+/* GRUAS */
+
+const gruas = {
+
+  RTG:[
+    "K-05","K-06","K-07","K-08","K-09","K-10","K-11","K-12","K-13","K-14","K-15","K-16","K-19","K-20","K-21","K-22","K-23","K-24","Z-25","Z-26","Z-27","Z-28","Z-29","Z-30"
+  ,"Z-31","Z-32","K-33","K-34","K-35","K-36","K-37","K-38","Z-39","Z-40","Z-41","Z-42","Z-43","Z-44","Z-45","Z-46","Z-47","Z-48","Z-49","Z-50"
+   ,"Z-51","Z-52","N-53","N-54","N-55","N-56","N-57","N-58","N-59"],
+
+  STS:[
+    "STS-10","STS-11","STS-12","STS-13","STS-14","STS-15","STS-16","STS-17","STS-18","STS-19","STS-20","STS-21","STS-22","STS-23"
+  ]
+
+};
+
+function loadGruas(){
+
+  grua.innerHTML = "";
+
+  (gruas[tipo.value] || []).forEach(g=>{
+
+    grua.innerHTML += `
+      <option>${g}</option>
+    `;
+
+  });
+
+}
+
+/* SAVE */
+
+async function save(){
+
+  const tipoVal = document.getElementById("tipo").value;
+  const gruaVal = document.getElementById("grua").value;
+  const fallaVal = document.getElementById("falla").value;
+  const descVal = document.getElementById("desc").value;
+  const reportaVal = document.getElementById("reporta").value;
+  const fechaVal = document.getElementById("fecha").value;
+  const fileInput = document.getElementById("imgs");
+
+  if(!gruaVal || !descVal){
+    alert("❌ Falta grúa o descripción");
+    return;
+  }
+
+  let images = [];
+
+  for(let f of fileInput.files){
+
+    const base64 = await new Promise(res=>{
+      let r = new FileReader();
+      r.onload = e => res(e.target.result);
+      r.readAsDataURL(f);
+    });
+
+    images.push(base64);
+  }
+
+  const { error } = await supabaseClient
+    .from("reclamos")
+    .insert([{
+      grua: gruaVal,
+      falla: fallaVal,
+      descripcion: descVal,
+      fecha_reporte: fechaVal,
+      fecha_atencion: null,
+      nota: "",
+      reporta: reportaVal,
+      estado: "abierto",
+      imagenes: images
+    }]);
+
+  if(error){
+    console.error(error);
+    alert("❌ Error: " + error.message);
+    return;
+  }
+
+  limpiar();
+  cargar();
+
+  alert("✅ Guardado correctamente");
+}
+
+/* LOAD */
+
+async function cargar(){
+
+  const { data: rows } = await supabaseClient
+    .from("reclamos")
+    .select("*")
+    .order("id",{ascending:false});
+
+  data = rows || [];
+
+  render();
+
+}
+
+/* ID 001 */
+
+function formatID(i){
+
+  return String(i + 1).padStart(3,"0");
+
+}
+
+/* CAMBIAR ESTADO */
+
+async function cambiarEstado(i){
+
+  let estados = [
+    "abierto",
+    "proceso",
+    "cerrado"
+  ];
+
+  let actual = data[i].estado;
+
+  let idx = estados.indexOf(actual);
+
+  let nuevo = estados[(idx + 1) % estados.length];
+
+  await supabaseClient
+    .from("reclamos")
+    .update({
+      estado: nuevo
+    })
+    .eq("id", data[i].id);
+
+  cargar();
+
+}
+async function guardarFechas(){
+
+  for(let r of data){
+
+    const fecha = document.getElementById(`fecha-${r.id}`).value;
+
+    const { error } = await supabaseClient
+      .from("reclamos")
+      .update({
+        fecha_atencion: fecha
+      })
+      .eq("id", r.id);
+
+    if(error){
+      console.error(error);
+    }
+
+  }
+
+  alert("✅ Fechas guardadas");
+
+}
+async function guardarNotas(){
+
+  for(let r of data){
+
+    const nota = document.getElementById(`nota-${r.id}`).value;
+
+    const { error } = await supabaseClient
+      .from("reclamos")
+      .update({
+        nota: nota
+      })
+      .eq("id", r.id);
+
+    if(error){
+      console.error(error);
+    }
+
+  }
+
+  alert("✅ Notas guardadas");
+
+}
+async function guardarCambios(id){
+
+  const fecha = document.getElementById(`fecha-${id}`).value;
+
+  const nota = document.getElementById(`nota-${id}`).value;
+
+  const { error } = await supabaseClient
+    .from("reclamos")
+    .update({
+      fecha_atencion: fecha,
+      nota: nota
+    })
+    .eq("id", id);
+
+  if(error){
+
+    console.error(error);
+
+    alert("❌ Error al guardar");
+
+    return;
+  }
+
+  alert("✅ Cambios guardados");
+
+}
+/* FECHA ATENCION */
+
+
+
+/* NOTA */
+
+
+
+/* RENDER */
+
+function render(){
+
+  table.innerHTML = "";
+
+  data.forEach((r,i)=>{
+
+    let imgsHTML = (r.imagenes || []).map(img =>
+
+      `<img
+        src="${img}"
+        class="img-thumb"
+        onclick="bigImg.src='${img}';visor.style.display='flex'"
+      >`
+
+    ).join("");
+
+    table.innerHTML += `
+
+      <tr>
+
+        <td>
+          <strong>Ticket-${formatID(i)}</strong>
+        </td>
+
+        <td>${r.grua || "-"}</td>
+
+        <td>${r.falla || "-"}</td>
+
+        <td>${r.descripcion || "-"}</td>
+
+        <td>${r.reporta || "-"}</td>
+
+        <td>${r.fecha_reporte || "-"}</td>
+
+        <td>
+         <input
+  type="date"
+  id="fecha-${r.id}"
+  class="fecha-atencion"
+  value="${r.fecha_atencion || ''}"
+>
+        </td>
+
+        <td>
+          <input
+  type="text"
+  id="nota-${r.id}"
+  class="nota-input"
+  placeholder="Agregar nota..."
+  value="${r.nota || ''}"
+>
+        </td>
+
+        <td>
+
+          <span
+            class="badge ${r.estado}"
+            onclick="cambiarEstado(${i})"
+          >
+
+            ${
+              r.estado === "abierto"
+              ? "ABIERTO"
+
+              : r.estado === "proceso"
+              ? "EN PROCESO"
+
+              : "CERRADO"
+            }
+
+          </span>
+
+        </td>
+
+        <td>${imgsHTML}</td>
+<td>
+
+
+
+</td>
+      </tr>
+
+    `;
+
+  });
+
+}
+
+/* LIMPIAR */
+
+function limpiar(){
+
+  tipo.value = "";
+  grua.innerHTML = `<option value="">Seleccionar</option>`;
+  falla.value = "Cabina";
+  reporta.value = "";
+  desc.value = "";
+  imgs.value = "";
+
+}
+
+/* INIT */
+
+fecha.value = new Date()
+  .toISOString()
+  .split("T")[0];
+
+cargar();
+
+
+</script>
+
+</body>
+</html>
