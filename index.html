@@ -9,7 +9,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-
+.admin-warning{
+  background:#fff7ed;
+  border:1px solid #fdba74;
+  color:#9a3412;
+  padding:14px 18px;
+  border-radius:14px;
+  margin-top:-10px;
+  margin-bottom:25px;
+  font-size:14px;
+  font-weight:600;
+}
 *{
   box-sizing:border-box;
 }
@@ -76,11 +86,19 @@ header h2{
   background:#fff;
   border-radius:22px;
   padding:28px;
-  max-width:1450px;
+  width:100%;
+  max-width:none;
   margin:auto;
   box-shadow:0 10px 30px rgba(0,0,0,.08);
 }
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:#eef2f7;
+  color:#0f172a;
 
+  
+}
 /* TITLES */
 
 .title{
@@ -160,90 +178,134 @@ textarea{
   box-shadow:0 8px 20px rgba(37,99,235,.30);
 }
 
-/* TABLE */
+
 
 .table-container{
-  overflow:auto;
+  width:100%;
+  overflow-x:auto;
+  border-radius:16px;
 }
 
+/* TABLA */
 table{
   width:100%;
+  min-width:unset;   
+  table-layout:auto; 
   border-collapse:collapse;
-  min-width:1400px;
+  background:#fff;
 }
 
-thead{
-  background:#f8fafc;
-}
+/* HEADERS */
 
 th{
-  padding:14px;
-  font-size:13px;
+  background:#f8fafc;
   color:#475569;
+  font-size:13px;
   text-transform:uppercase;
   letter-spacing:.5px;
+  padding:16px 12px;
   border-bottom:2px solid #e2e8f0;
 }
 
+/* CELDAS */
+
 td{
-  padding:14px;
+  padding:18px 12px;
   border-bottom:1px solid #edf2f7;
-  text-align:center;
-  font-size:14px;
   vertical-align:middle;
-}
+  font-size:14px;
 
-tr:hover{
-  background:#f8fafc;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  word-wrap:break-word;
 }
-
-/* STATUS */
+/* ESTADOS */
 
 .badge{
-  padding:8px 14px;
+  padding:10px 16px;
   border-radius:999px;
   font-size:12px;
   font-weight:700;
   cursor:pointer;
-  display:inline-block;
-  transition:.2s;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  white-space:nowrap;
+  overflow:visible;
+  text-overflow:unset;
+
+  min-width:120px;
 }
 
 .badge:hover{
   transform:scale(1.05);
 }
 
+/* ABIERTO */
+
 .abierto{
   background:#fee2e2;
   color:#b91c1c;
 }
+
+/* EN PROCESO */
 
 .proceso{
   background:#fef3c7;
   color:#92400e;
 }
 
+/* CERRADO */
+
 .cerrado{
   background:#dcfce7;
   color:#166534;
 }
 
-/* IMAGES */
+
+/* DESCRIPCIÓN */
+
+.descripcion-cell{
+  white-space:normal;
+  line-height:1.5;
+}
+
+/* INPUTS */
+
+.fecha-atencion,
+.nota-input{
+  width:100%;
+  border-radius:10px;
+}
+
+/* FOTOS */
+
+.fotos-container{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  justify-content:center;
+}
 
 .img-thumb{
-  width:45px;
-  height:45px;
+  width:55px;
+  height:55px;
   object-fit:cover;
   border-radius:10px;
-  cursor:pointer;
   border:2px solid #e2e8f0;
-  transition:.2s;
 }
 
 .img-thumb:hover{
-  transform:scale(1.1);
+  transform:scale(1.08);
 }
+/* NO CORTAR ESTADO */
 
+td:nth-child(9){
+  overflow:visible;
+  text-overflow:unset;
+  white-space:nowrap;
+}
 /* VIEWER */
 
 #visor{
@@ -294,7 +356,34 @@ tr:hover{
     gap:15px;
     text-align:center;
   }
+.img-thumb{
+  width:55px;
+  height:55px;
+  object-fit:cover;
+  border-radius:10px;
+  cursor:pointer;
+  border:2px solid #e2e8f0;
+  transition:.2s;
+}
+@media(max-width: 1200px){
+  table{
+    font-size:12px;
+  }
 
+  td, th{
+    padding:10px 6px;
+  }
+}
+
+@media(max-width: 800px){
+  .table-container{
+    overflow-x:auto;
+  }
+
+  table{
+    min-width:900px; /* scroll controlado, no exagerado */
+  }
+}
 }
 
 </style>
@@ -342,17 +431,26 @@ tr:hover{
       </div>
 
       <div class="form-group">
-        <label>Tipo de falla</label>
+  <label>Tipo de falla</label>
 
-        <select id="falla">
-          <option>Intercom(Gaitronics)</option>
-          <option>Panel de Fallas</option>
-          <option>Alumbrado</option>
-          <option>Joystics</option>
-          <option>Cristales</option>
-          <option>Otros</option>
-        </select>
-      </div>
+  <select id="falla" onchange="mostrarOtraFalla()">
+    <option>Intercom(Gaitronics)</option>
+    <option>Panel de Fallas</option>
+    <option>Alumbrado</option>
+    <option>Joystics</option>
+    <option>Cristales</option>
+    <option>Otros</option>
+  </select>
+
+  <!-- INPUT OCULTO -->
+  <div id="otroFallaContainer" style="display:none; margin-top:10px;">
+    <input 
+      type="text" 
+      id="otraFalla" 
+      placeholder="Especificar tipo de falla"
+    >
+  </div>
+</div>
 
       <div class="form-group">
         <label>Fecha reporte</label>
@@ -397,6 +495,10 @@ tr:hover{
   <div class="card">
 
     <h3 class="title">Reportes registrados</h3>
+    <div class="admin-warning">
+      
+  Esta sección es únicamente para modificación por personal de grúas autorizado.
+</div>
     <div style="display:flex;gap:12px;margin-bottom:20px;">
 
   <button
@@ -503,21 +605,37 @@ function loadGruas(){
   });
 
 }
+function mostrarOtraFalla(){
 
+  const fallaSelect = document.getElementById("falla");
+  const container = document.getElementById("otroFallaContainer");
+
+  if(fallaSelect.value === "Otros"){
+    container.style.display = "block";
+  }else{
+    container.style.display = "none";
+    document.getElementById("otraFalla").value = "";
+  }
+
+}
 /* SAVE */
 
 async function save(){
 
   const tipoVal = document.getElementById("tipo").value;
   const gruaVal = document.getElementById("grua").value;
-  const fallaVal = document.getElementById("falla").value;
+  let fallaVal = document.getElementById("falla").value;
+
+if(fallaVal === "Otros"){
+  fallaVal = document.getElementById("otraFalla").value;
+}
   const descVal = document.getElementById("desc").value;
   const reportaVal = document.getElementById("reporta").value;
   const fechaVal = document.getElementById("fecha").value;
   const fileInput = document.getElementById("imgs");
 
   if(!gruaVal || !descVal){
-    alert("❌ Falta grúa o descripción");
+    alert("Falta grúa o descripción");
     return;
   }
 
@@ -557,7 +675,7 @@ async function save(){
   limpiar();
   cargar();
 
-  alert("✅ Guardado correctamente");
+  alert("Guardado correctamente");
 }
 
 /* LOAD */
@@ -628,7 +746,7 @@ async function guardarFechas(){
 
   }
 
-  alert("✅ Fechas guardadas");
+  alert("Fechas guardadas");
 
 }
 async function guardarNotas(){
@@ -650,7 +768,7 @@ async function guardarNotas(){
 
   }
 
-  alert("✅ Notas guardadas");
+  alert("Notas guardadas");
 
 }
 async function guardarCambios(id){
@@ -671,12 +789,12 @@ async function guardarCambios(id){
 
     console.error(error);
 
-    alert("❌ Error al guardar");
+    alert("Error al guardar");
 
     return;
   }
 
-  alert("✅ Cambios guardados");
+  alert("Cambios guardados");
 
 }
 /* FECHA ATENCION */
@@ -709,39 +827,58 @@ function render(){
 
       <tr>
 
+        <!-- TICKET -->
         <td>
           <strong>Ticket-${formatID(i)}</strong>
         </td>
 
-        <td>${r.grua || "-"}</td>
-
-        <td>${r.falla || "-"}</td>
-
-        <td>${r.descripcion || "-"}</td>
-
-        <td>${r.reporta || "-"}</td>
-
-        <td>${r.fecha_reporte || "-"}</td>
-
+        <!-- GRUA -->
         <td>
-         <input
-  type="date"
-  id="fecha-${r.id}"
-  class="fecha-atencion"
-  value="${r.fecha_atencion || ''}"
->
+          ${r.grua || "-"}
         </td>
 
+        <!-- FALLA -->
+        <td class="falla-cell">
+          ${r.falla || "-"}
+        </td>
+
+        <!-- DESCRIPCION -->
+        <td class="descripcion-cell">
+          ${r.descripcion || "-"}
+        </td>
+
+        <!-- REPORTA -->
+        <td>
+          ${r.reporta || "-"}
+        </td>
+
+        <!-- FECHA REPORTE -->
+        <td>
+          ${r.fecha_reporte || "-"}
+        </td>
+
+        <!-- FECHA ATENCION -->
         <td>
           <input
-  type="text"
-  id="nota-${r.id}"
-  class="nota-input"
-  placeholder="Agregar nota..."
-  value="${r.nota || ''}"
->
+            type="date"
+            id="fecha-${r.id}"
+            class="fecha-atencion"
+            value="${r.fecha_atencion || ''}"
+          >
         </td>
 
+        <!-- NOTA -->
+        <td>
+          <input
+            type="text"
+            id="nota-${r.id}"
+            class="nota-input"
+            placeholder="Agregar nota..."
+            value="${r.nota || ''}"
+          >
+        </td>
+
+        <!-- ESTADO -->
         <td>
 
           <span
@@ -763,12 +900,13 @@ function render(){
 
         </td>
 
-        <td>${imgsHTML}</td>
-<td>
+        <!-- FOTOS -->
+        <td>
+          <div class="fotos-container">
+            ${imgsHTML || "-"}
+          </div>
+        </td>
 
-
-
-</td>
       </tr>
 
     `;
@@ -803,3 +941,5 @@ cargar();
 
 </body>
 </html>
+
+ 
