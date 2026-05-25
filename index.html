@@ -288,12 +288,14 @@ td{
   justify-content:center;
 }
 
-.img-thumb{
+.img-thumb,
+video.img-thumb{
   width:55px;
   height:55px;
   object-fit:cover;
   border-radius:10px;
   border:2px solid #e2e8f0;
+  cursor:pointer;
 }
 
 .img-thumb:hover{
@@ -470,10 +472,15 @@ td:nth-child(9){
       </div>
 
       <div class="form-group">
-        <label>Imágenes</label>
+  <label>Imágenes / Videos</label>
 
-        <input type="file" id="imgs" multiple>
-      </div>
+  <input
+    type="file"
+    id="imgs"
+    multiple
+    accept="image/*,video/*"
+  >
+</div>
 
       <div class="form-group full">
         <label>Descripción</label>
@@ -556,7 +563,7 @@ td:nth-child(9){
 
 <!-- VISOR -->
 
-<div id="visor" onclick="this.style.display='none'">
+<div id="visor" onclick="this.style.display='none'"></div>
   <img id="bigImg">
 </div>
 
@@ -759,10 +766,10 @@ async function cambiarEstado(i){
           </p>
 
           <input
-            type="file"
-            id="fotoEvidencia"
-            accept="image/*"
-            style="margin:15px 0;"
+          type="file"
+          id="fotoEvidencia"
+          accept="image/*,video/*"
+          style="margin:15px 0;"
           >
 
           <div style="
@@ -994,15 +1001,42 @@ function render(){
 
   data.forEach((r,i)=>{
 
-    let imgsHTML = (r.imagenes || []).map(img =>
+    let imgsHTML = (r.imagenes || []).map(file => {
 
-      `<img
-        src="${img}"
+  const esVideo = file.includes("data:video");
+
+  // VIDEO
+  if(esVideo){
+
+    return `
+      <video
         class="img-thumb"
-        onclick="bigImg.src='${img}';visor.style.display='flex'"
-      >`
+        muted
+        onclick="
+          visor.innerHTML=
+          '<video src=&quot;${file}&quot; controls autoplay style=&quotmax-width:90%;max-height:90%;border-radius:18px;&quot></video>';
+          visor.style.display='flex';
+        "
+      >
+        <source src="${file}">
+      </video>
+    `;
+  }
 
-    ).join("");
+  // IMAGEN
+  return `
+    <img
+      src="${file}"
+      class="img-thumb"
+      onclick="
+        visor.innerHTML=
+        '<img src=&quot;${file}&quot; id=&quotbigImg&quot>';
+        visor.style.display='flex';
+      "
+    >
+  `;
+
+}).join("");
 
     table.innerHTML += `
 
@@ -1088,19 +1122,56 @@ function render(){
   </div>
 </td>
 
-<!-- FOTO EVIDENCIA -->
+<!-- FOTO / VIDEO CORRECCION -->
 <td>
+
   ${
     r.foto_evidencia
-    ? `
-      <img
-        src="${r.foto_evidencia}"
-        class="img-thumb"
-        onclick="bigImg.src='${r.foto_evidencia}';visor.style.display='flex'"
-      >
-    `
+    ? (() => {
+
+        const esVideoCorreccion =
+          r.foto_evidencia.includes("data:video");
+
+        // VIDEO
+        if(esVideoCorreccion){
+
+          return `
+            <video
+              class="img-thumb"
+              muted
+              onclick="
+                visor.innerHTML=
+                '<video controls autoplay style=&quot;max-width:90%;max-height:90%;border-radius:18px;&quot;>
+                  <source src=&quot;${r.foto_evidencia}&quot;>
+                </video>';
+
+                visor.style.display='flex';
+              "
+            >
+              <source src="${r.foto_evidencia}">
+            </video>
+          `;
+        }
+
+        // IMAGEN
+        return `
+          <img
+            src="${r.foto_evidencia}"
+            class="img-thumb"
+            onclick="
+              visor.innerHTML=
+              '<img src=&quot;${r.foto_evidencia}&quot; style=&quot;max-width:90%;max-height:90%;border-radius:18px;&quot;>';
+
+              visor.style.display='flex';
+            "
+          >
+        `;
+
+      })()
+
     : "-"
   }
+
 </td>
 
       </tr>
