@@ -328,11 +328,16 @@ td:nth-child(9){
 
 .fecha-atencion,
 .nota-input{
-  padding:8px;
+  width:100%;
+  min-width:250px;
+  max-width:500px;
+  padding:10px;
   border-radius:10px;
   border:1px solid #cbd5e1;
   background:#fff;
-  width:100%;
+
+  white-space:normal;
+  overflow-wrap:break-word;
 }
 
 .nota-input{
@@ -532,7 +537,8 @@ td:nth-child(9){
             <th>Fecha Atención</th>
             <th>Nota</th>
             <th>Estado</th>
-            <th>Fotos</th>
+            <th>Fotos del daño</th>
+            <th>Fotos Correccion</th>
             
           </tr>
 
@@ -635,7 +641,7 @@ if(fallaVal === "Otros"){
   const fileInput = document.getElementById("imgs");
 
   if(!gruaVal || !descVal){
-    alert("Falta grúa o descripción");
+    alert("❌ Falta grúa o descripción");
     return;
   }
 
@@ -703,6 +709,8 @@ function formatID(i){
 
 /* CAMBIAR ESTADO */
 
+/* CAMBIAR ESTADO */
+
 async function cambiarEstado(i){
 
   let estados = [
@@ -717,12 +725,185 @@ async function cambiarEstado(i){
 
   let nuevo = estados[(idx + 1) % estados.length];
 
+  // SI CAMBIA A CERRADO
+  if(nuevo === "cerrado"){
+
+    // Crear ventana modal
+    const modal = document.createElement("div");
+
+    modal.innerHTML = `
+      <div id="modalEvidencia" style="
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.5);
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        z-index:9999;
+      ">
+
+        <div style="
+          background:#fff;
+          padding:25px;
+          border-radius:18px;
+          width:350px;
+          box-shadow:0 10px 30px rgba(0,0,0,.2);
+        ">
+
+          <h3 style="margin-top:0;">
+            Cerrar reporte
+          </h3>
+
+          <p style="font-size:14px;color:#475569;">
+            ¿Deseas subir foto de evidencia?
+          </p>
+
+          <input
+            type="file"
+            id="fotoEvidencia"
+            accept="image/*"
+            style="margin:15px 0;"
+          >
+
+          <div style="
+            display:flex;
+            gap:10px;
+            justify-content:flex-end;
+          ">
+
+            <button
+              onclick="document.getElementById('modalEvidencia').remove()"
+              style="
+                padding:10px 15px;
+                border:none;
+                border-radius:10px;
+                background:#e2e8f0;
+                cursor:pointer;
+              "
+            >
+              Cancelar
+            </button>
+
+            <button
+              onclick="guardarCierreConEvidencia(${i})"
+              style="
+                padding:10px 15px;
+                border:none;
+                border-radius:10px;
+                background:#2563eb;
+                color:#fff;
+                cursor:pointer;
+              "
+            >
+              Cerrar reporte
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    return;
+  }
+
+  // ESTADOS NORMALES
   await supabaseClient
     .from("reclamos")
     .update({
       estado: nuevo
     })
     .eq("id", data[i].id);
+
+  cargar();
+
+}
+/* GUARDAR CIERRE CON EVIDENCIA */
+
+async function guardarCierreConEvidencia(i){
+
+  const input = document.getElementById("fotoEvidencia");
+
+  let evidencia = null;
+
+  // Convertir imagen a base64
+  if(input.files[0]){
+
+    evidencia = await new Promise(res=>{
+
+      const reader = new FileReader();
+
+      reader.onload = e => res(e.target.result);
+
+      reader.readAsDataURL(input.files[0]);
+
+    });
+
+  }
+
+  const row = data[i];
+
+  const { error } = await supabaseClient
+    .from("reclamos")
+    .update({
+      estado: "cerrado",
+      foto_evidencia: evidencia
+    })
+    .eq("id", row.id);
+
+  if(error){
+
+    console.error(error);
+
+    alert("Error al cerrar reporte");
+
+    return;
+  }
+
+  document.getElementById("modalEvidencia").remove();
+
+  cargar();
+
+}
+/* SUBIR EVIDENCIA CIERRE */
+
+async function subirEvidencia(event, id){
+
+  const file = event.target.files[0];
+
+  if(!file) return;
+
+  const base64 = await new Promise(res=>{
+    const reader = new FileReader();
+
+    reader.onload = e => res(e.target.result);
+
+    reader.readAsDataURL(file);
+  });
+
+  // Obtener imágenes actuales
+  const row = data.find(r => r.id === id);
+
+  let imagenesActuales = row.imagenes || [];
+
+  // Guardar evidencia adicional
+  const { error } = await supabaseClient
+    .from("reclamos")
+    .update({
+      imagenes: [...imagenesActuales, base64]
+    })
+    .eq("id", id);
+
+  if(error){
+    console.error(error);
+    alert("Error al subir evidencia");
+    return;
+  }
+
+  alert("Evidencia subida correctamente");
 
   cargar();
 
@@ -869,43 +1050,58 @@ function render(){
 
         <!-- NOTA -->
         <td>
-          <input
-            type="text"
-            id="nota-${r.id}"
-            class="nota-input"
-            placeholder="Agregar nota..."
-            value="${r.nota || ''}"
-          >
+          <textarea
+  id="nota-${r.id}"
+  class="nota-input"
+  placeholder="Agregar nota..."
+>${r.nota || ''}</textarea>
         </td>
 
-        <!-- ESTADO -->
-        <td>
+     <!-- ESTADO -->
+<td>
 
-          <span
-            class="badge ${r.estado}"
-            onclick="cambiarEstado(${i})"
-          >
+  <span
+    class="badge ${r.estado}"
+    onclick="cambiarEstado(${i})"
+  >
 
-            ${
-              r.estado === "abierto"
-              ? "ABIERTO"
+    ${
+      r.estado === "abierto"
+      ? "ABIERTO"
 
-              : r.estado === "proceso"
-              ? "EN PROCESO"
+      : r.estado === "proceso"
+      ? "EN PROCESO"
 
-              : "CERRADO"
-            }
+      : "CERRADO"
+    }
 
-          </span>
+  </span>
 
-        </td>
+ 
+
+</td>
 
         <!-- FOTOS -->
-        <td>
-          <div class="fotos-container">
-            ${imgsHTML || "-"}
-          </div>
-        </td>
+<td>
+  <div class="fotos-container">
+    ${imgsHTML || "-"}
+  </div>
+</td>
+
+<!-- FOTO EVIDENCIA -->
+<td>
+  ${
+    r.foto_evidencia
+    ? `
+      <img
+        src="${r.foto_evidencia}"
+        class="img-thumb"
+        onclick="bigImg.src='${r.foto_evidencia}';visor.style.display='flex'"
+      >
+    `
+    : "-"
+  }
+</td>
 
       </tr>
 
@@ -942,4 +1138,3 @@ cargar();
 </body>
 </html>
 
- 
