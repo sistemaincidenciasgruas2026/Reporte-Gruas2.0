@@ -9,16 +9,146 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-.admin-warning{
-  background:#fff7ed;
-  border:1px solid #fdba74;
-  color:#9a3412;
-  padding:14px 18px;
-  border-radius:14px;
-  margin-top:-10px;
-  margin-bottom:25px;
-  font-size:14px;
+  .kpi-container{
+  display:flex;
+  gap:15px;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.kpi-card{
+  min-width:120px;
+  background:#ffffff;
+  border:1px solid #dbe2ea;
+  border-radius:10px;
+  padding:12px 18px;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+
+.kpi-card span{
+  font-size:12px;
+  color:#64748b;
   font-weight:600;
+}
+
+.kpi-card strong{
+  margin-top:5px;
+  font-size:24px;
+  font-weight:700;
+}
+.kpi-card.open{
+  border-top:4px solid #dc2626;
+}
+
+.kpi-card.process{
+  border-top:4px solid #d97706;
+}
+
+.kpi-card.closed{
+  border-top:4px solid #16a34a;
+}
+  .table-container{
+  width:100%;
+  overflow-x:auto;
+  border-radius:16px;
+
+  margin-top:40px;
+}
+.toolbar{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:20px;
+
+  padding:14px 18px;
+  margin-bottom:18px;
+
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:14px;
+}
+
+.toolbar-left,
+.toolbar-center,
+.toolbar-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.toolbar-center{
+  justify-content:center;
+}
+
+.toolbar-right{
+  justify-content:flex-end;
+}
+
+.stats{
+  display:flex;
+  gap:16px;
+  font-size:13px;
+  font-weight:700;
+}
+
+.stats span{
+  white-space:nowrap;
+}
+
+.stats .open{
+  color:#dc2626;
+}
+
+.stats .process{
+  color:#ca8a04;
+}
+
+.stats .closed{
+  color:#16a34a;
+}
+
+.btn-small{
+  padding:10px 16px;
+  font-size:14px;
+}
+
+.filtro-select{
+  width:140px;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #cbd5e1;
+}
+
+@media(max-width:900px){
+
+.toolbar{
+  background:#ffffff;
+  border:1px solid #dbe2ea;
+  border-radius:10px;
+  padding:16px 20px;
+}
+
+  .toolbar-left,
+  .toolbar-center,
+  .toolbar-right{
+    justify-content:center;
+  }
+}
+.admin-warning{
+  background:#f8fafc;
+  border:1px solid #dbe2ea;
+  color:#475569;
+  padding:12px 16px;
+  border-radius:8px;
+  margin-bottom:20px;
+  font-size:13px;
+  font-weight:500;
 }
 *{
   box-sizing:border-box;
@@ -84,12 +214,10 @@ header h2{
 
 .card{
   background:#fff;
-  border-radius:22px;
-  padding:28px;
-  width:100%;
-  max-width:none;
-  margin:auto;
-  box-shadow:0 10px 30px rgba(0,0,0,.08);
+  border:1px solid #d9e1ea;
+  border-radius:10px;
+  padding:24px;
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
 }
 body{
   margin:0;
@@ -107,8 +235,24 @@ body{
   font-size:24px;
   font-weight:700;
   color:#0f172a;
-}
 
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.section-tag{
+  padding:5px 12px;
+  font-size:12px;
+  font-weight:600;
+
+  color:#475569;
+  background:#f8fafc;
+
+  border:1px solid #dbe2ea;
+  border-radius:999px;
+
+  white-space:nowrap;
+}
 /* FORM */
 
 .form-grid{
@@ -162,20 +306,23 @@ textarea{
 /* BUTTON */
 
 .primary{
-  border:none;
-  padding:15px;
-  border-radius:14px;
-  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  border:1px solid #2563eb;
+  background:#2563eb;
   color:#fff;
-  font-size:15px;
-  font-weight:700;
+
+  padding:10px 18px;
+  border-radius:8px;
+
+  font-size:14px;
+  font-weight:600;
+
   cursor:pointer;
-  transition:.2s;
+
+  transition:background .15s ease;
 }
 
 .primary:hover{
-  transform:translateY(-2px);
-  box-shadow:0 8px 20px rgba(37,99,235,.30);
+  background:#1d4ed8;
 }
 
 
@@ -244,23 +391,27 @@ td{
 
 /* ABIERTO */
 
-.abierto{
-  background:#fee2e2;
-  color:#b91c1c;
+.badge{
+  background:#f8fafc;
+  border:1px solid #dbe2ea;
+  border-radius:6px;
+  min-width:120px;
+  font-weight:600;
 }
 
-/* EN PROCESO */
+.abierto{
+  color:#b91c1c;
+  border-left:4px solid #b91c1c;
+}
 
 .proceso{
-  background:#fef3c7;
-  color:#92400e;
+  color:#b45309;
+  border-left:4px solid #b45309;
 }
 
-/* CERRADO */
-
 .cerrado{
-  background:#dcfce7;
   color:#166534;
+  border-left:4px solid #166534;
 }
 
 
@@ -506,29 +657,78 @@ td:nth-child(9){
 
   <div class="card">
 
-    <h3 class="title">Reportes registrados</h3>
-    <div class="admin-warning">
-      
-  Esta sección es únicamente para modificación por personal de grúas autorizado.
+    <h3 class="title">
+  Reportes registrados
+  <span class="section-tag">
+    Personal autorizado MTTO GRUAS
+  </span>
+</h3>
+
+<div class="toolbar">
+
+  <div class="toolbar-left">
+
+    <button class="primary btn-small"
+      onclick="guardarFechas()">
+      Guardar Fechas
+    </button>
+
+    <button class="primary btn-small"
+      onclick="guardarNotas()">
+      Guardar Notas
+    </button>
+
+  </div>
+
+  <div id="contadorEstados" class="toolbar-center">
+  </div>
+
+  <div class="toolbar-right">
+
+    <button
+      class="primary btn-small"
+      style="background:linear-gradient(135deg,#16a34a,#15803d)"
+      onclick="exportarExcelAbiertos()">
+      Reporte Excel
+    </button>
+
+    <select
+      id="filtroEstado"
+      onchange="render()"
+      class="filtro-select">
+      <option value="todos">Todos</option>
+      <option value="abierto">Abiertos</option>
+      <option value="proceso">Proceso</option>
+      <option value="cerrado">Cerrados</option>
+    </select>
+
+  </div>
+
 </div>
-    <div style="display:flex;gap:12px;margin-bottom:20px;">
 
-  <button
-    class="primary"
-    onclick="guardarFechas()"
-  >
-    Guardar Fechas Atención
-  </button>
 
-  <button
-    class="primary"
-    onclick="guardarNotas()"
-  >
-    Guardar Notas
-  </button>
+<div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
 
 </div>
-    <div class="table-container">
+
+  <!-- CONTADORES -->
+  <div
+    id="contadorEstados"
+    style="
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    font-size:14px;
+    font-weight:700;
+    "
+  >
+  </div>
+
+</div>
+
+
+
+<div class="table-container">
 
       <table>
 
@@ -563,14 +763,145 @@ td:nth-child(9){
 
 <!-- VISOR -->
 
-<div id="visor" onclick="this.style.display='none'"></div>
+<div id="visor" onclick="this.style.display='none'">
   <img id="bigImg">
 </div>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
+function exportarExcelAbiertos() {
 
+// Filtrar incidencias abiertas y en proceso
+const pendientes = data.filter(r => {
+  const estado = (r.estado || "").toLowerCase();
+
+  return estado === "abierto" || estado === "proceso";
+});
+
+if (pendientes.length === 0) {
+  alert("No hay incidencias abiertas o en proceso.");
+  return;
+}
+
+  const excelData = [];
+
+  // Encabezados
+  excelData.push([
+    "TICKET",
+    "GRUA",
+    "FALLA",
+    "DESCRIPCION",
+    "REPORTA",
+    "ESTADO"
+  ]);
+
+  pendientes.forEach((r, index) => {
+
+    excelData.push([
+      `Ticket-${String(index + 1).padStart(3, "0")}`,
+      r.grua || "",
+      r.falla || "",
+      r.descripcion || "",
+      r.reporta || "",
+      (r.estado || "").toUpperCase()
+    ]);
+
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+  // Ancho columnas
+  ws["!cols"] = [
+    { wch: 15 }, // Ticket
+    { wch: 15 }, // Grua
+    { wch: 25 }, // Falla
+    { wch: 60 }, // Descripcion
+    { wch: 25 }, // Reporta
+    { wch: 15 }  // Estado
+  ];
+
+  // Filtro
+  ws["!autofilter"] = {
+    ref: "A1:F" + excelData.length
+  };
+
+  // Congelar encabezado
+  ws["!freeze"] = {
+    xSplit: 0,
+    ySplit: 1
+  };
+
+  // Estilo encabezados
+  const headerStyle = {
+    font: {
+      bold: true,
+      color: { rgb: "FFFFFF" },
+      sz: 12
+    },
+    fill: {
+      fgColor: { rgb: "1E40AF" }
+    },
+    alignment: {
+      horizontal: "center",
+      vertical: "center"
+    },
+    border: {
+      top: { style: "thin" },
+      bottom: { style: "thin" },
+      left: { style: "thin" },
+      right: { style: "thin" }
+    }
+  };
+
+  // Aplicar estilo encabezados
+  ["A1","B1","C1","D1","E1","F1"].forEach(cell => {
+    if(ws[cell]) ws[cell].s = headerStyle;
+  });
+
+  // Estilo datos
+  for(let row = 2; row <= excelData.length; row++) {
+
+    ["A","B","C","D","E","F"].forEach(col => {
+
+      const cell = ws[`${col}${row}`];
+
+      if(cell) {
+
+        cell.s = {
+          alignment: {
+            vertical: "top",
+            wrapText: true
+          },
+          border: {
+            top: { style: "thin", color:{rgb:"D1D5DB"} },
+            bottom: { style: "thin", color:{rgb:"D1D5DB"} },
+            left: { style: "thin", color:{rgb:"D1D5DB"} },
+            right: { style: "thin", color:{rgb:"D1D5DB"} }
+          }
+        };
+
+      }
+
+    });
+
+  }
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    ws,
+    "Incidencias Pendientes"
+  );
+
+  const fecha = new Date().toISOString().split("T")[0];
+
+  XLSX.writeFile(
+    wb,
+    `Incidencias_Pendientes_${fecha}.xlsx`
+  );
+
+}
 const supabaseClient = supabase.createClient(
   "https://gogalvnmpntvjtiunowz.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvZ2Fsdm5tcG50dmp0aXVub3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzM5MzcsImV4cCI6MjA4Nzg0OTkzN30.wOZbM_s2F-FjdrXqUz6lvRnOYAPuTYlGhwcP3hzbYTw"
@@ -695,15 +1026,19 @@ if(fallaVal === "Otros"){
 
 async function cargar(){
 
-  const { data: rows } = await supabaseClient
+  const { data: rows, error } = await supabaseClient
     .from("reclamos")
     .select("*")
-    .order("id",{ascending:false});
+    .order("created_at", { ascending: true });
+
+  if(error){
+    console.error(error);
+    return;
+  }
 
   data = rows || [];
 
   render();
-
 }
 
 /* ID 001 */
@@ -714,144 +1049,20 @@ function formatID(i){
 
 }
 
-/* CAMBIAR ESTADO */
-
-/* CAMBIAR ESTADO */
-
-async function cambiarEstado(i){
-
-  let estados = [
-    "abierto",
-    "proceso",
-    "cerrado"
-  ];
-
-  let actual = data[i].estado;
-
-  let idx = estados.indexOf(actual);
-
-  let nuevo = estados[(idx + 1) % estados.length];
-
-  // SI CAMBIA A CERRADO
-  if(nuevo === "cerrado"){
-
-    // Crear ventana modal
-    const modal = document.createElement("div");
-
-    modal.innerHTML = `
-      <div id="modalEvidencia" style="
-        position:fixed;
-        inset:0;
-        background:rgba(0,0,0,.5);
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        z-index:9999;
-      ">
-
-        <div style="
-          background:#fff;
-          padding:25px;
-          border-radius:18px;
-          width:350px;
-          box-shadow:0 10px 30px rgba(0,0,0,.2);
-        ">
-
-          <h3 style="margin-top:0;">
-            Cerrar reporte
-          </h3>
-
-          <p style="font-size:14px;color:#475569;">
-            ¿Deseas subir foto de evidencia?
-          </p>
-
-          <input
-          type="file"
-          id="fotoEvidencia"
-          accept="image/*,video/*"
-          style="margin:15px 0;"
-          >
-
-          <div style="
-            display:flex;
-            gap:10px;
-            justify-content:flex-end;
-          ">
-
-            <button
-              onclick="document.getElementById('modalEvidencia').remove()"
-              style="
-                padding:10px 15px;
-                border:none;
-                border-radius:10px;
-                background:#e2e8f0;
-                cursor:pointer;
-              "
-            >
-              Cancelar
-            </button>
-
-            <button
-              onclick="guardarCierreConEvidencia(${i})"
-              style="
-                padding:10px 15px;
-                border:none;
-                border-radius:10px;
-                background:#2563eb;
-                color:#fff;
-                cursor:pointer;
-              "
-            >
-              Cerrar reporte
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    return;
-  }
-
-  // ESTADOS NORMALES
-  await supabaseClient
-    .from("reclamos")
-    .update({
-      estado: nuevo
-    })
-    .eq("id", data[i].id);
-
-  cargar();
-
-}
-/* GUARDAR CIERRE CON EVIDENCIA */
-
-async function guardarCierreConEvidencia(i){
+async function guardarCierreConEvidencia(id){
 
   const input = document.getElementById("fotoEvidencia");
 
-  let evidencia = null;
-
-  // Convertir imagen a base64
-  if(input.files[0]){
-
-    evidencia = await new Promise(res=>{
-
-      const reader = new FileReader();
-
-      reader.onload = e => res(e.target.result);
-
-      reader.readAsDataURL(input.files[0]);
-
-    });
-
+  if(!input.files[0]){
+    alert("Falta evidencia");
+    return;
   }
 
-  const row = data[i];
+  const evidencia = await new Promise(res=>{
+    const reader = new FileReader();
+    reader.onload = e => res(e.target.result);
+    reader.readAsDataURL(input.files[0]);
+  });
 
   const { error } = await supabaseClient
     .from("reclamos")
@@ -859,21 +1070,32 @@ async function guardarCierreConEvidencia(i){
       estado: "cerrado",
       foto_evidencia: evidencia
     })
-    .eq("id", row.id);
+    .eq("id", id);
 
   if(error){
-
-    console.error(error);
-
-    alert("Error al cerrar reporte");
-
+    alert(error.message);
     return;
   }
 
   document.getElementById("modalEvidencia").remove();
-
   cargar();
+}
+async function cerrarSinEvidencia(id){
 
+  const { error } = await supabaseClient
+    .from("reclamos")
+    .update({
+      estado: "cerrado"
+    })
+    .eq("id", id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  document.getElementById("modalEvidencia").remove();
+  cargar();
 }
 /* SUBIR EVIDENCIA CIERRE */
 
@@ -998,8 +1220,49 @@ async function guardarCambios(id){
 function render(){
 
   table.innerHTML = "";
+  const abiertos =
+  data.filter(r => r.estado === "abierto").length;
 
-  data.forEach((r,i)=>{
+const proceso =
+  data.filter(r => r.estado === "proceso").length;
+
+const cerrados =
+  data.filter(r => r.estado === "cerrado").length;
+
+document.getElementById("contadorEstados").innerHTML = `
+  <div class="kpi-container">
+
+    <div class="kpi-card open">
+      <span>Abiertos</span>
+      <strong>${abiertos}</strong>
+    </div>
+
+    <div class="kpi-card process">
+      <span>En proceso</span>
+      <strong>${proceso}</strong>
+    </div>
+
+    <div class="kpi-card closed">
+      <span>Cerrados</span>
+      <strong>${cerrados}</strong>
+    </div>
+
+  </div>
+`;
+  const filtro =
+    document.getElementById("filtroEstado")?.value || "todos";
+
+  let registros = data;
+
+  if(filtro !== "todos"){
+
+    registros = data.filter(r =>
+      (r.estado || "").toLowerCase() === filtro
+    );
+
+  }
+
+  registros.forEach((r,i)=>{
 
     let imgsHTML = (r.imagenes || []).map(file => {
 
@@ -1014,7 +1277,7 @@ function render(){
         muted
         onclick="
           visor.innerHTML=
-          '<video src=&quot;${file}&quot; controls autoplay style=&quotmax-width:90%;max-height:90%;border-radius:18px;&quot></video>';
+          '<video src=&quot;${file}&quot; controls autoplay style=&quot;max-width:90%;max-height:90%;border-radius:18px;&quot;></video>';
           visor.style.display='flex';
         "
       >
@@ -1030,7 +1293,7 @@ function render(){
       class="img-thumb"
       onclick="
         visor.innerHTML=
-        '<img src=&quot;${file}&quot; id=&quotbigImg&quot>';
+        '<img src=&quot;${file}&quot; id=&quot;bigImg&quot;>';
         visor.style.display='flex';
       "
     >
@@ -1092,26 +1355,16 @@ function render(){
         </td>
 
      <!-- ESTADO -->
+<!-- ESTADO -->
 <td>
 
-  <span
-    class="badge ${r.estado}"
-    onclick="cambiarEstado(${i})"
-  >
+<span
+  id="estado-${r.id}"
+  class="badge ${r.estado}"
+  onclick="cambiarEstado('${r.id}')">
+  ${r.estado.toUpperCase()}
+</span>
 
-    ${
-      r.estado === "abierto"
-      ? "ABIERTO"
-
-      : r.estado === "proceso"
-      ? "EN PROCESO"
-
-      : "CERRADO"
-    }
-
-  </span>
-
- 
 
 </td>
 
@@ -1181,7 +1434,343 @@ function render(){
   });
 
 }
+function abrirModalEvidenciaObligatoria(id, select, estadoAnterior){
 
+  document.getElementById("modalEvidencia")?.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "modalEvidencia";
+
+  modal.innerHTML = `
+    <div style="
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.7);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      z-index:99999;
+    ">
+      <div style="
+        background:#fff;
+        width:420px;
+        padding:20px;
+        border-radius:12px;
+      ">
+        <h3>⚠️ Cierre con evidencia obligatoria</h3>
+
+        <p style="font-size:13px;color:#555">
+          Debes subir una foto o video para poder cerrar este reporte.
+        </p>
+
+        <input type="file"
+          id="evidenciaFile"
+          accept="image/*,video/*"
+          style="width:100%;margin:10px 0;"
+        >
+
+        <div id="previewEvidencia" style="margin:10px 0;"></div>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+          <button id="cancelarEvidencia">Cancelar</button>
+          <button id="guardarEvidencia">Cerrar con evidencia</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // PREVIEW
+  document.getElementById("evidenciaFile").onchange = (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+
+      if(file.type.startsWith("image/")){
+        document.getElementById("previewEvidencia").innerHTML =
+          `<img src="${ev.target.result}" style="max-width:100%;border-radius:10px;">`;
+      } else {
+        document.getElementById("previewEvidencia").innerHTML =
+          `<video controls style="max-width:100%;border-radius:10px;">
+            <source src="${ev.target.result}">
+          </video>`;
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  // CANCELAR → regresa estado original
+  document.getElementById("cancelarEvidencia").onclick = () => {
+    modal.remove();
+    select.value = estadoAnterior; // 🔥 revierte cambio
+  };
+
+  // GUARDAR
+  document.getElementById("guardarEvidencia").onclick = async () => {
+
+    const file = document.getElementById("evidenciaFile").files[0];
+
+    if(!file){
+      alert("Debes subir evidencia para cerrar");
+      return;
+    }
+
+    const base64 = await new Promise(res=>{
+      const reader = new FileReader();
+      reader.onload = e => res(e.target.result);
+      reader.readAsDataURL(file);
+    });
+
+    const { error } = await supabaseClient
+      .from("reclamos")
+      .update({
+        estado: "cerrado",
+        foto_evidencia: base64
+      })
+      .eq("id", id);
+
+    if(error){
+      alert(error.message);
+      return;
+    }
+
+    modal.remove();
+    cargar();
+  };
+}
+function abrirModalCierre(id){
+
+  document.getElementById("modalCierre")?.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "modalCierre";
+
+modal.innerHTML = `
+<div style="
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.75);
+  backdrop-filter:blur(4px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999999;
+">
+
+  <div style="
+    background:#fff;
+    width:480px;
+    max-width:95%;
+    border-radius:18px;
+    padding:28px;
+    box-shadow:0 25px 50px rgba(0,0,0,.25);
+  ">
+
+    <h2 style="
+      margin:0 0 10px;
+      color:#0f172a;
+      font-size:24px;
+    ">
+      Cerrar incidencia
+    </h2>
+
+    <p style="
+      margin:0 0 20px;
+      color:#64748b;
+      font-size:14px;
+    ">
+      Adjunta una fotografía o video como evidencia de la corrección.
+    </p>
+
+    <div style="
+      border:2px dashed #cbd5e1;
+      border-radius:14px;
+      padding:20px;
+      text-align:center;
+      background:#f8fafc;
+    ">
+
+      <input
+        type="file"
+        id="fileCierre"
+        accept="image/*,video/*"
+        onchange="previewArchivo(this)"
+        style="width:100%;"
+      >
+
+      <div
+        id="previewContainer"
+        style="margin-top:15px;">
+      </div>
+
+    </div>
+
+    <div style="
+      margin-top:24px;
+      display:flex;
+      justify-content:flex-end;
+      gap:12px;
+    ">
+
+      <button
+        onclick="document.getElementById('modalCierre').remove()"
+        style="
+          border:1px solid #cbd5e1;
+          background:white;
+          color:#334155;
+          padding:10px 18px;
+          border-radius:10px;
+          cursor:pointer;
+          font-weight:600;
+        ">
+        Cancelar
+      </button>
+
+      <button
+  onclick="guardarCierre('${id}')"
+  style="
+    border:none;
+    background:#16a34a;
+    color:white;
+    padding:10px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+  ">
+  ✓ Cerrar incidencia
+</button>
+
+    </div>
+
+  </div>
+
+</div>
+`;
+
+  document.body.appendChild(modal);
+}
+async function cambiarEstado(id){
+
+  console.log("CLICK ID:", id);
+
+  const { data: row, error } = await supabaseClient
+    .from("reclamos")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if(error || !row){
+    console.log(error);
+    alert("No se encontró el registro");
+    return;
+  }
+
+  const estados = ["abierto","proceso","cerrado"];
+  const idx = estados.indexOf(row.estado || "abierto");
+  const nuevo = estados[(idx + 1) % estados.length];
+
+  // SI ES CERRADO → MODAL
+if(nuevo === "cerrado"){
+  abrirModalCierre(id); // ✔ ESTA ES LA CORRECTA EN TU CÓDIGO
+  return;
+}
+
+  const { error: err2 } = await supabaseClient
+    .from("reclamos")
+    .update({ estado: nuevo })
+    .eq("id", id);
+
+  if(err2){
+    console.log(err2);
+    alert(err2.message);
+    return;
+  }
+
+  cargar();
+}
+async function guardarCierre(id){
+
+  const file = document.getElementById("fileCierre").files[0];
+
+  let evidencia = null;
+
+  // SI hay archivo, lo convierte a base64
+  if(file){
+    evidencia = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const { error } = await supabaseClient
+    .from("reclamos")
+    .update({
+      estado: "cerrado",
+      foto_evidencia: evidencia // puede ser null si no suben nada
+    })
+    .eq("id", id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  // cerrar modal
+  document.getElementById("modalCierre")?.remove();
+
+  // recargar tabla
+  cargar();
+
+  // mensaje final
+  alert("Reporte Cerrado");
+}
+function previewArchivo(input){
+
+  const file = input.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = e => {
+
+    const cont = document.getElementById("previewContainer");
+
+    if(file.type.startsWith("image/")){
+      cont.innerHTML = `<img src="${e.target.result}" style="max-width:100%;border-radius:10px;">`;
+    } else {
+      cont.innerHTML = `
+        <video controls style="max-width:100%;border-radius:10px;">
+          <source src="${e.target.result}">
+        </video>
+      `;
+    }
+  };
+
+  reader.readAsDataURL(file);
+}
+function previewFoto(input){
+
+  const file = input.files[0];
+
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = e => {
+
+    const img = document.getElementById("previewEvidencia");
+
+    img.src = e.target.result;
+    img.style.display = "block";
+  };
+
+  reader.readAsDataURL(file);
+}
 /* LIMPIAR */
 
 function limpiar(){
@@ -1205,7 +1794,7 @@ cargar();
 
 
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 </body>
 </html>
-
+ 
