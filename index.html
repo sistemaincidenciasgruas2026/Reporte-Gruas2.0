@@ -88,6 +88,32 @@
 
 .toolbar-right{
   justify-content:flex-end;
+  gap:18px;
+}
+
+.toolbar-group{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:6px;
+}
+
+.toolbar-group-title{
+  font-size:11px;
+  font-weight:800;
+  color:#64748b;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+.toolbar-group-buttons{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.toolbar-group-buttons .btn-small{
+  min-width:72px;
 }
 
 .stats{
@@ -138,6 +164,10 @@
   .toolbar-center,
   .toolbar-right{
     justify-content:center;
+  }
+
+  .toolbar-right{
+    flex-wrap:wrap;
   }
 }
 .admin-warning{
@@ -692,15 +722,35 @@ td:nth-child(9){
       Reporte Excel
     </button>
 
-    <select
-      id="filtroEstado"
-      onchange="render()"
-      class="filtro-select">
-      <option value="todos">Todos</option>
-      <option value="abierto">Abiertos</option>
-      <option value="proceso">Proceso</option>
-      <option value="cerrado">Cerrados</option>
-    </select>
+    <div class="toolbar-group">
+      <div class="toolbar-group-title">Equipo</div>
+      <div class="toolbar-group-buttons">
+        <button
+          class="primary btn-small"
+          onclick="filtrarEquipo('RTG')">
+          RTG
+        </button>
+
+        <button
+          class="primary btn-small"
+          onclick="filtrarEquipo('STS')">
+          STS
+        </button>
+      </div>
+    </div>
+
+    <div class="toolbar-group">
+      <div class="toolbar-group-title">Estado</div>
+      <select
+        id="filtroEstado"
+        onchange="render()"
+        class="filtro-select">
+        <option value="todos">Todos</option>
+        <option value="abierto">Abiertos</option>
+        <option value="proceso">Proceso</option>
+        <option value="cerrado">Cerrados</option>
+      </select>
+    </div>
 
   </div>
 
@@ -909,6 +959,7 @@ const supabaseClient = supabase.createClient(
 
 let data = [];
 let editando = null;
+let cargandoReclamos = false;
 
 /* NAV */
 
@@ -919,6 +970,12 @@ function show(p){
 
   document.getElementById(p)
     .classList.add("active");
+
+  // Si el usuario entra a Ver Reportes después de un error,
+  // permite reintentar. Si ya hay una carga en curso, no duplica la consulta.
+  if(p === "list" && !cargandoReclamos){
+    cargar();
+  }
 }
 
 /* GRUAS */
@@ -1026,19 +1083,54 @@ if(fallaVal === "Otros"){
 
 async function cargar(){
 
+  if(cargandoReclamos) return;
+
+  cargandoReclamos = true;
+
+  const tbody = document.getElementById("table");
+
+  if(tbody && data.length === 0){
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="11" style="text-align:center;padding:30px;color:#64748b;font-weight:600;">
+          Cargando reportes...
+        </td>
+      </tr>
+    `;
+  }
+
+  // IMPORTANTE: no usamos select("*").
+  // Las columnas imagenes y foto_evidencia contienen Base64 y pueden ser muy pesadas.
+  // Se cargan únicamente cuando el usuario solicita ver las evidencias.
   const { data: rows, error } = await supabaseClient
     .from("reclamos")
-    .select("*")
-    .order("created_at", { ascending: true });
+    .select("id, grua, falla, descripcion, reporta, fecha_reporte, fecha_atencion, nota, estado")
+    .order("id", { ascending: true });
 
   if(error){
-    console.error(error);
+    console.error("ERROR AL CARGAR RECLAMOS:", error);
+
+    if(tbody){
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="11" style="text-align:center;padding:30px;color:#dc2626;font-weight:700;">
+            Error al cargar los reportes: ${error.message || "Error desconocido"}
+          </td>
+        </tr>
+      `;
+    }
+
+    cargandoReclamos = false;
     return;
   }
 
   data = rows || [];
 
+  console.log("REGISTROS CARGADOS:", data.length);
+
   render();
+
+  cargandoReclamos = false;
 }
 
 /* ID 001 */
@@ -1107,18 +1199,25 @@ async function subirEvidencia(event, id){
 
   const base64 = await new Promise(res=>{
     const reader = new FileReader();
-
     reader.onload = e => res(e.target.result);
-
     reader.readAsDataURL(file);
   });
 
-  // Obtener imágenes actuales
-  const row = data.find(r => r.id === id);
+  // Obtener únicamente las imágenes actuales del registro.
+  const { data: row, error: errorConsulta } = await supabaseClient
+    .from("reclamos")
+    .select("imagenes")
+    .eq("id", id)
+    .single();
 
-  let imagenesActuales = row.imagenes || [];
+  if(errorConsulta){
+    console.error(errorConsulta);
+    alert("Error al obtener las evidencias actuales");
+    return;
+  }
 
-  // Guardar evidencia adicional
+  let imagenesActuales = row?.imagenes || [];
+
   const { error } = await supabaseClient
     .from("reclamos")
     .update({
@@ -1135,7 +1234,6 @@ async function subirEvidencia(event, id){
   alert("Evidencia subida correctamente");
 
   cargar();
-
 }
 async function guardarFechas(){
 
@@ -1215,127 +1313,105 @@ async function guardarCambios(id){
 
 
 
+/* FILTRO POR TIPO DE GRUA */
+
+let filtroEquipo = "todos";
+
+function filtrarEquipo(tipo){
+
+  // Si se vuelve a presionar el mismo botón, regresa a Todos
+  filtroEquipo = (filtroEquipo === tipo) ? "todos" : tipo;
+
+  render();
+}
+
 /* RENDER */
 
 function render(){
 
-  table.innerHTML = "";
-  const abiertos =
-  data.filter(r => r.estado === "abierto").length;
+  const tbody = document.getElementById("table");
 
-const proceso =
-  data.filter(r => r.estado === "proceso").length;
+  if(!tbody) return;
 
-const cerrados =
-  data.filter(r => r.estado === "cerrado").length;
+  tbody.innerHTML = "";
 
-document.getElementById("contadorEstados").innerHTML = `
-  <div class="kpi-container">
+  const abiertos = data.filter(r => r.estado === "abierto").length;
+  const proceso = data.filter(r => r.estado === "proceso").length;
+  const cerrados = data.filter(r => r.estado === "cerrado").length;
 
-    <div class="kpi-card open">
-      <span>Abiertos</span>
-      <strong>${abiertos}</strong>
-    </div>
+  const contador = document.getElementById("contadorEstados");
 
-    <div class="kpi-card process">
-      <span>En proceso</span>
-      <strong>${proceso}</strong>
-    </div>
+  if(contador){
+    contador.innerHTML = `
+      <div class="kpi-container">
+        <div class="kpi-card open">
+          <span>Abiertos</span>
+          <strong>${abiertos}</strong>
+        </div>
+        <div class="kpi-card process">
+          <span>En proceso</span>
+          <strong>${proceso}</strong>
+        </div>
+        <div class="kpi-card closed">
+          <span>Cerrados</span>
+          <strong>${cerrados}</strong>
+        </div>
+      </div>
+    `;
+  }
 
-    <div class="kpi-card closed">
-      <span>Cerrados</span>
-      <strong>${cerrados}</strong>
-    </div>
-
-  </div>
-`;
-  const filtro =
-    document.getElementById("filtroEstado")?.value || "todos";
+  const filtro = document.getElementById("filtroEstado")?.value || "todos";
 
   let registros = data;
 
   if(filtro !== "todos"){
-
-    registros = data.filter(r =>
+    registros = registros.filter(r =>
       (r.estado || "").toLowerCase() === filtro
     );
+  }
 
+  if(filtroEquipo === "RTG"){
+    registros = registros.filter(r => {
+      const grua = String(r.grua || "").trim().toUpperCase();
+      return /^[KNZ]-?/.test(grua);
+    });
+  }
+
+  if(filtroEquipo === "STS"){
+    registros = registros.filter(r => {
+      const grua = String(r.grua || "").trim().toUpperCase();
+      return grua.startsWith("STS");
+    });
+  }
+
+  if(registros.length === 0){
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="11" style="text-align:center;padding:30px;color:#64748b;font-weight:600;">
+          No hay reportes para mostrar.
+        </td>
+      </tr>
+    `;
+    return;
   }
 
   registros.forEach((r,i)=>{
 
-    let imgsHTML = (r.imagenes || []).map(file => {
-
-  const esVideo = file.includes("data:video");
-
-  // VIDEO
-  if(esVideo){
-
-    return `
-      <video
-        class="img-thumb"
-        muted
-        onclick="
-          visor.innerHTML=
-          '<video src=&quot;${file}&quot; controls autoplay style=&quot;max-width:90%;max-height:90%;border-radius:18px;&quot;></video>';
-          visor.style.display='flex';
-        "
-      >
-        <source src="${file}">
-      </video>
-    `;
-  }
-
-  // IMAGEN
-  return `
-    <img
-      src="${file}"
-      class="img-thumb"
-      onclick="
-        visor.innerHTML=
-        '<img src=&quot;${file}&quot; id=&quot;bigImg&quot;>';
-        visor.style.display='flex';
-      "
-    >
-  `;
-
-}).join("");
-
-    table.innerHTML += `
-
+    tbody.innerHTML += `
       <tr>
 
-        <!-- TICKET -->
-        <td>
-          <strong>Ticket-${formatID(i)}</strong>
-        </td>
+        <td><strong>Ticket-${formatID(i)}</strong></td>
 
-        <!-- GRUA -->
-        <td>
-          ${r.grua || "-"}
-        </td>
+        <td>${r.grua || "-"}</td>
 
-        <!-- FALLA -->
-        <td class="falla-cell">
-          ${r.falla || "-"}
-        </td>
+        <td class="falla-cell">${r.falla || "-"}</td>
 
-        <!-- DESCRIPCION -->
-        <td class="descripcion-cell">
-          ${r.descripcion || "-"}
-        </td>
+        <td class="descripcion-cell">${r.descripcion || "-"}</td>
 
-        <!-- REPORTA -->
-        <td>
-          ${r.reporta || "-"}
-        </td>
+        <td>${r.reporta || "-"}</td>
 
-        <!-- FECHA REPORTE -->
-        <td>
-          ${r.fecha_reporte || "-"}
-        </td>
+        <td>${r.fecha_reporte || "-"}</td>
 
-        <!-- FECHA ATENCION -->
         <td>
           <input
             type="date"
@@ -1345,95 +1421,167 @@ document.getElementById("contadorEstados").innerHTML = `
           >
         </td>
 
-        <!-- NOTA -->
         <td>
           <textarea
-  id="nota-${r.id}"
-  class="nota-input"
-  placeholder="Agregar nota..."
->${r.nota || ''}</textarea>
+            id="nota-${r.id}"
+            class="nota-input"
+            placeholder="Agregar nota..."
+          >${r.nota || ''}</textarea>
         </td>
 
-     <!-- ESTADO -->
-<!-- ESTADO -->
-<td>
+        <td>
+          <span
+            id="estado-${r.id}"
+            class="badge ${r.estado || ''}"
+            onclick="cambiarEstado('${r.id}')">
+            ${(r.estado || "").toUpperCase()}
+          </span>
+        </td>
 
-<span
-  id="estado-${r.id}"
-  class="badge ${r.estado}"
-  onclick="cambiarEstado('${r.id}')">
-  ${r.estado.toUpperCase()}
-</span>
+        <td>
+          <div
+            id="fotos-${r.id}"
+            class="fotos-container"
+            style="min-width:90px;min-height:55px;display:flex;align-items:center;justify-content:center;">
+            <button
+              type="button"
+              onclick="cargarFotos('${r.id}', this)"
+              style="border:1px solid #cbd5e1;background:#f8fafc;color:#334155;padding:7px 10px;border-radius:8px;cursor:pointer;font-weight:600;">
+              Ver fotos
+            </button>
+          </div>
+        </td>
 
-
-</td>
-
-        <!-- FOTOS -->
-<td>
-  <div class="fotos-container">
-    ${imgsHTML || "-"}
-  </div>
-</td>
-
-<!-- FOTO / VIDEO CORRECCION -->
-<td>
-
-  ${
-    r.foto_evidencia
-    ? (() => {
-
-        const esVideoCorreccion =
-          r.foto_evidencia.includes("data:video");
-
-        // VIDEO
-        if(esVideoCorreccion){
-
-          return `
-            <video
-              class="img-thumb"
-              muted
-              onclick="
-                visor.innerHTML=
-                '<video controls autoplay style=&quot;max-width:90%;max-height:90%;border-radius:18px;&quot;>
-                  <source src=&quot;${r.foto_evidencia}&quot;>
-                </video>';
-
-                visor.style.display='flex';
-              "
-            >
-              <source src="${r.foto_evidencia}">
-            </video>
-          `;
-        }
-
-        // IMAGEN
-        return `
-          <img
-            src="${r.foto_evidencia}"
-            class="img-thumb"
-            onclick="
-              visor.innerHTML=
-              '<img src=&quot;${r.foto_evidencia}&quot; style=&quot;max-width:90%;max-height:90%;border-radius:18px;&quot;>';
-
-              visor.style.display='flex';
-            "
-          >
-        `;
-
-      })()
-
-    : "-"
-  }
-
-</td>
+        <td>
+          <div
+            id="correccion-${r.id}"
+            class="fotos-container"
+            style="min-width:90px;min-height:55px;display:flex;align-items:center;justify-content:center;">
+            <button
+              type="button"
+              onclick="cargarFotoCorreccion('${r.id}', this)"
+              style="border:1px solid #cbd5e1;background:#f8fafc;color:#334155;padding:7px 10px;border-radius:8px;cursor:pointer;font-weight:600;">
+              Ver evidencia
+            </button>
+          </div>
+        </td>
 
       </tr>
-
     `;
-
   });
-
 }
+
+/* EVIDENCIAS: se cargan bajo demanda para evitar timeouts por Base64 */
+
+async function cargarFotos(id, boton){
+
+  const cont = document.getElementById(`fotos-${id}`);
+  if(!cont) return;
+
+  cont.innerHTML = `<span style="color:#64748b;font-size:12px;">Cargando...</span>`;
+
+  const { data: row, error } = await supabaseClient
+    .from("reclamos")
+    .select("imagenes")
+    .eq("id", id)
+    .single();
+
+  if(error){
+    console.error("ERROR AL CARGAR FOTOS:", error);
+    cont.innerHTML = `<span style="color:#dc2626;font-size:12px;">Error</span>`;
+    return;
+  }
+
+  const imagenes = row?.imagenes || [];
+
+  if(!imagenes.length){
+    cont.innerHTML = `<span style="color:#94a3b8;font-size:12px;">Sin fotos</span>`;
+    return;
+  }
+
+  cont.innerHTML = imagenes.map(file => {
+
+    const esVideo = file.includes("data:video");
+
+    if(esVideo){
+      return `
+        <video
+          class="img-thumb"
+          muted
+          onclick="
+            visor.innerHTML='<video src=&quot;${file}&quot; controls autoplay style=&quot;max-width:90%;max-height:90%;border-radius:18px;&quot;></video>';
+            visor.style.display='flex';
+          ">
+          <source src="${file}">
+        </video>
+      `;
+    }
+
+    return `
+      <img
+        src="${file}"
+        class="img-thumb"
+        onclick="
+          visor.innerHTML='<img src=&quot;${file}&quot; id=&quot;bigImg&quot; style=&quot;max-width:90%;max-height:90%;border-radius:18px;&quot;>';
+          visor.style.display='flex';
+        "
+      >
+    `;
+  }).join("");
+}
+
+async function cargarFotoCorreccion(id, boton){
+
+  const cont = document.getElementById(`correccion-${id}`);
+  if(!cont) return;
+
+  cont.innerHTML = `<span style="color:#64748b;font-size:12px;">Cargando...</span>`;
+
+  const { data: row, error } = await supabaseClient
+    .from("reclamos")
+    .select("foto_evidencia")
+    .eq("id", id)
+    .single();
+
+  if(error){
+    console.error("ERROR AL CARGAR EVIDENCIA:", error);
+    cont.innerHTML = `<span style="color:#dc2626;font-size:12px;">Error</span>`;
+    return;
+  }
+
+  const file = row?.foto_evidencia;
+
+  if(!file){
+    cont.innerHTML = `<span style="color:#94a3b8;font-size:12px;">Sin evidencia</span>`;
+    return;
+  }
+
+  if(file.includes("data:video")){
+    cont.innerHTML = `
+      <video
+        class="img-thumb"
+        muted
+        onclick="
+          visor.innerHTML='<video controls autoplay style=&quot;max-width:90%;max-height:90%;border-radius:18px;&quot;><source src=&quot;${file}&quot;></video>';
+          visor.style.display='flex';
+        ">
+        <source src="${file}">
+      </video>
+    `;
+  }else{
+    cont.innerHTML = `
+      <img
+        src="${file}"
+        class="img-thumb"
+        onclick="
+          visor.innerHTML='<img src=&quot;${file}&quot; style=&quot;max-width:90%;max-height:90%;border-radius:18px;&quot;>';
+          visor.style.display='flex';
+        "
+      >
+    `;
+  }
+}
+
 function abrirModalEvidenciaObligatoria(id, select, estadoAnterior){
 
   document.getElementById("modalEvidencia")?.remove();
@@ -1659,7 +1807,7 @@ async function cambiarEstado(id){
 
   const { data: row, error } = await supabaseClient
     .from("reclamos")
-    .select("*")
+    .select("id, estado")
     .eq("id", id)
     .single();
 
