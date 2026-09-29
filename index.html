@@ -1239,7 +1239,12 @@ async function guardarFechas(){
 
   for(let r of data){
 
-    const fecha = document.getElementById(`fecha-${r.id}`).value;
+    const campoFecha = document.getElementById(`fecha-${r.id}`);
+
+    // Si el registro no está visible por los filtros RTG/STS/Estado, se omite.
+    if(!campoFecha) continue;
+
+    const fecha = campoFecha.value;
 
     const { error } = await supabaseClient
       .from("reclamos")
@@ -1261,7 +1266,12 @@ async function guardarNotas(){
 
   for(let r of data){
 
-    const nota = document.getElementById(`nota-${r.id}`).value;
+    const campoNota = document.getElementById(`nota-${r.id}`);
+
+    // Si el registro no está visible por los filtros RTG/STS/Estado, se omite.
+    if(!campoNota) continue;
+
+    const nota = campoNota.value;
 
     const { error } = await supabaseClient
       .from("reclamos")
